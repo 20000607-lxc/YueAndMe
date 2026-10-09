@@ -59,8 +59,6 @@ window.PHOTOS = [
   {"author": "越越", "place": "济南", "file": "116890.JPG", "src": "photos/越越/济南/116890.jpg", "thumb": "thumbs/越越/济南/116890.jpg", "w": 1506, "h": 2000, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "116951.JPG", "src": "photos/越越/济南/116951.jpg", "thumb": "thumbs/越越/济南/116951.jpg", "w": 1499, "h": 2000, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "117208.JPG", "src": "photos/越越/济南/117208.jpg", "thumb": "thumbs/越越/济南/117208.jpg", "w": 2000, "h": 1499, "title": "", "date": "", "note": ""},
-  {"author": "越越", "place": "济南", "file": "117285.JPG", "src": "photos/越越/济南/117285.jpg", "thumb": "thumbs/越越/济南/117285.jpg", "w": 2000, "h": 1499, "title": "", "date": "", "note": ""},
-  {"author": "越越", "place": "济南", "file": "117294.JPG", "src": "photos/越越/济南/117294.jpg", "thumb": "thumbs/越越/济南/117294.jpg", "w": 2000, "h": 1499, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "118785.JPG", "src": "photos/越越/济南/118785.jpg", "thumb": "thumbs/越越/济南/118785.jpg", "w": 2000, "h": 1332, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "118786.JPG", "src": "photos/越越/济南/118786.jpg", "thumb": "thumbs/越越/济南/118786.jpg", "w": 2000, "h": 1333, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "119448.JPG", "src": "photos/越越/济南/119448.jpg", "thumb": "thumbs/越越/济南/119448.jpg", "w": 2000, "h": 1499, "title": "", "date": "", "note": ""},
@@ -105,10 +103,7 @@ window.PHOTOS = [
   {"author": "越越", "place": "济南", "file": "20a44e0d080225128500436638ac412d.JPG", "src": "photos/越越/济南/20a44e0d080225128500436638ac412d.jpg", "thumb": "thumbs/越越/济南/20a44e0d080225128500436638ac412d.jpg", "w": 2000, "h": 1518, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "24111.JPG", "src": "photos/越越/济南/24111.jpg", "thumb": "thumbs/越越/济南/24111.jpg", "w": 1500, "h": 2000, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "25622.JPG", "src": "photos/越越/济南/25622.jpg", "thumb": "thumbs/越越/济南/25622.jpg", "w": 1000, "h": 2000, "title": "", "date": "", "note": ""},
-  {"author": "越越", "place": "济南", "file": "28993.JPG", "src": "photos/越越/济南/28993.jpg", "thumb": "thumbs/越越/济南/28993.jpg", "w": 2000, "h": 1500, "title": "", "date": "", "note": ""},
-  {"author": "越越", "place": "济南", "file": "29010.JPG", "src": "photos/越越/济南/29010.jpg", "thumb": "thumbs/越越/济南/29010.jpg", "w": 1499, "h": 2000, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "29045.JPG", "src": "photos/越越/济南/29045.jpg", "thumb": "thumbs/越越/济南/29045.jpg", "w": 1500, "h": 2000, "title": "", "date": "", "note": ""},
-  {"author": "越越", "place": "济南", "file": "29062.JPG", "src": "photos/越越/济南/29062.jpg", "thumb": "thumbs/越越/济南/29062.jpg", "w": 2000, "h": 1500, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "30143.JPG", "src": "photos/越越/济南/30143.jpg", "thumb": "thumbs/越越/济南/30143.jpg", "w": 2000, "h": 1506, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "30144.JPG", "src": "photos/越越/济南/30144.jpg", "thumb": "thumbs/越越/济南/30144.jpg", "w": 2000, "h": 1578, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "38289.JPG", "src": "photos/越越/济南/38289.jpg", "thumb": "thumbs/越越/济南/38289.jpg", "w": 2000, "h": 2000, "title": "", "date": "", "note": ""},
@@ -137,11 +132,8 @@ window.PHOTOS = [
   {"author": "越越", "place": "济南", "file": "62163.JPG", "src": "photos/越越/济南/62163.jpg", "thumb": "thumbs/越越/济南/62163.jpg", "w": 1333, "h": 2000, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "65547.JPG", "src": "photos/越越/济南/65547.jpg", "thumb": "thumbs/越越/济南/65547.jpg", "w": 957, "h": 2000, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "65550.JPG", "src": "photos/越越/济南/65550.jpg", "thumb": "thumbs/越越/济南/65550.jpg", "w": 2000, "h": 1753, "title": "", "date": "", "note": ""},
-  {"author": "越越", "place": "济南", "file": "65555.JPG", "src": "photos/越越/济南/65555.jpg", "thumb": "thumbs/越越/济南/65555.jpg", "w": 1216, "h": 2000, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "65612.JPG", "src": "photos/越越/济南/65612.jpg", "thumb": "thumbs/越越/济南/65612.jpg", "w": 1500, "h": 2000, "title": "", "date": "", "note": ""},
-  {"author": "越越", "place": "济南", "file": "65672.JPG", "src": "photos/越越/济南/65672.jpg", "thumb": "thumbs/越越/济南/65672.jpg", "w": 2000, "h": 1500, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "65673.JPG", "src": "photos/越越/济南/65673.jpg", "thumb": "thumbs/越越/济南/65673.jpg", "w": 1500, "h": 2000, "title": "", "date": "", "note": ""},
-  {"author": "越越", "place": "济南", "file": "65674.JPG", "src": "photos/越越/济南/65674.jpg", "thumb": "thumbs/越越/济南/65674.jpg", "w": 1500, "h": 2000, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "65677.JPG", "src": "photos/越越/济南/65677.jpg", "thumb": "thumbs/越越/济南/65677.jpg", "w": 2000, "h": 1500, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "69864.JPG", "src": "photos/越越/济南/69864.jpg", "thumb": "thumbs/越越/济南/69864.jpg", "w": 2000, "h": 1760, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "70c5d202e607dbbdc7231a5b67a4ecf5.JPG", "src": "photos/越越/济南/70c5d202e607dbbdc7231a5b67a4ecf5.jpg", "thumb": "thumbs/越越/济南/70c5d202e607dbbdc7231a5b67a4ecf5.jpg", "w": 1076, "h": 2000, "title": "", "date": "", "note": ""},
@@ -245,4 +237,16 @@ window.PHOTOS = [
   {"author": "越越", "place": "济南", "file": "e24493dd03bdbaea89f8eda9748c23a7.JPG", "src": "photos/越越/济南/e24493dd03bdbaea89f8eda9748c23a7.jpg", "thumb": "thumbs/越越/济南/e24493dd03bdbaea89f8eda9748c23a7.jpg", "w": 2000, "h": 1399, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "e41a7b7bf4a43926e9c5a81259418913.JPG", "src": "photos/越越/济南/e41a7b7bf4a43926e9c5a81259418913.jpg", "thumb": "thumbs/越越/济南/e41a7b7bf4a43926e9c5a81259418913.jpg", "w": 1126, "h": 2000, "title": "", "date": "", "note": ""},
   {"author": "越越", "place": "济南", "file": "eeaa6d451514e761bef43d8986621774.JPG", "src": "photos/越越/济南/eeaa6d451514e761bef43d8986621774.jpg", "thumb": "thumbs/越越/济南/eeaa6d451514e761bef43d8986621774.jpg", "w": 2000, "h": 1500, "title": "", "date": "", "note": ""},
+
+  // ---- Sherry · 旧金山 ----
+  {"author": "Sherry", "place": "旧金山", "file": "117285.JPG", "src": "photos/Sherry/旧金山/117285.jpg", "thumb": "thumbs/Sherry/旧金山/117285.jpg", "w": 2000, "h": 1499, "title": "", "date": "", "note": ""},
+  {"author": "Sherry", "place": "旧金山", "file": "117294.JPG", "src": "photos/Sherry/旧金山/117294.jpg", "thumb": "thumbs/Sherry/旧金山/117294.jpg", "w": 2000, "h": 1499, "title": "", "date": "", "note": ""},
+
+  // ---- 合照 · 济南 ----
+  {"author": "合照", "place": "济南", "file": "29010.JPG", "src": "photos/合照/济南/29010.jpg", "thumb": "thumbs/合照/济南/29010.jpg", "w": 1499, "h": 2000, "title": "", "date": "", "note": ""},
+  {"author": "合照", "place": "济南", "file": "65674.JPG", "src": "photos/合照/济南/65674.jpg", "thumb": "thumbs/合照/济南/65674.jpg", "w": 1500, "h": 2000, "title": "", "date": "", "note": ""},
+  {"author": "合照", "place": "济南", "file": "65555.JPG", "src": "photos/合照/济南/65555.jpg", "thumb": "thumbs/合照/济南/65555.jpg", "w": 1216, "h": 2000, "title": "", "date": "", "note": ""},
+  {"author": "合照", "place": "济南", "file": "28993.JPG", "src": "photos/合照/济南/28993.jpg", "thumb": "thumbs/合照/济南/28993.jpg", "w": 2000, "h": 1500, "title": "", "date": "", "note": ""},
+  {"author": "合照", "place": "济南", "file": "65672.JPG", "src": "photos/合照/济南/65672.jpg", "thumb": "thumbs/合照/济南/65672.jpg", "w": 2000, "h": 1500, "title": "", "date": "", "note": ""},
+  {"author": "合照", "place": "济南", "file": "29062.JPG", "src": "photos/合照/济南/29062.jpg", "thumb": "thumbs/合照/济南/29062.jpg", "w": 2000, "h": 1500, "title": "", "date": "", "note": ""},
 ];
