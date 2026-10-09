@@ -21,8 +21,9 @@ setInterval(tickClocks, 15000);
 const AUTHORS = {
   '越越':   { city: 'Jinan' },
   'Sherry': { city: 'San Francisco' },
+  '合照':   { city: 'Together' },
 };
-const AUTHOR_ORDER = ['越越', 'Sherry'];
+const AUTHOR_ORDER = ['越越', 'Sherry', '合照'];
 
 const photos = (window.PHOTOS || []).map((p, i) => ({ ...p, _i: i }));
 const root = document.getElementById('gallery-root');

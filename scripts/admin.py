@@ -49,63 +49,60 @@ def state():
             places[e["author"]].append(e["place"])
     return {"photos": entries, "places": places}
 
-def move_entry(e, new_place):
-    """把一张照片的原图、大图、缩略图挪到另一个地点文件夹，并更新条目。"""
+def move_entry(e, new_author, new_place):
+    """把一张照片的原图、大图、缩略图挪到另一个作者/地点文件夹，并更新条目。"""
     author = e["author"]
     orig = bp.ORIG / author / e["place"] / e.get("file", "")
     if not e.get("file") or not orig.exists():
-        # 老条目没有 file 字段：按 slug 反查
         cands = [p for p in (bp.ORIG / author / e["place"]).iterdir()
                  if bp.is_image(p) and bp.slug(p.name) == Path(e["src"]).stem]
         if not cands:
             raise FileNotFoundError(f"找不到原图：{e['src']}")
         orig = cands[0]
-    new_orig = unique(bp.ORIG / author / new_place / orig.name)
+    new_orig = unique(bp.ORIG / new_author / new_place / orig.name)
     new_orig.parent.mkdir(parents=True, exist_ok=True)
     shutil.move(str(orig), str(new_orig))
 
-    rel = Path(author) / new_place / f"{bp.slug(new_orig.name)}.jpg"
+    rel = Path(new_author) / new_place / f"{bp.slug(new_orig.name)}.jpg"
     for base, key in ((bp.PHOTOS, "src"), (bp.THUMBS, "thumb")):
         old = ROOT / e[key]
         new = base / rel
         new.parent.mkdir(parents=True, exist_ok=True)
         if old.exists():
             shutil.move(str(old), str(new))
-    e.update(place=new_place, file=new_orig.name,
+    e.update(author=new_author, place=new_place, file=new_orig.name,
              src=f"photos/{rel.as_posix()}", thumb=f"thumbs/{rel.as_posix()}")
 
-def apply_layout(author, layout):
-    """layout = {地点: [src, ...]}，整体决定该作者的地点归属和顺序。"""
+def apply_layout(layout):
+    """layout = {作者: {地点: [src, ...]}}，决定出现在其中的照片的归属和顺序。
+    没出现在 layout 里的作者/照片保持原样。"""
     entries = bp.load_entries()
     by_src = {e["src"]: e for e in entries}
-    mine = [e for e in entries if e["author"] == author]
-    others = [e for e in entries if e["author"] != author]
-    placed = []
-    seen = set()          # 已处理的条目（按对象）
-    for place, srcs in layout.items():
-        place = safe_name(place)
-        (bp.ORIG / author / place).mkdir(parents=True, exist_ok=True)
-        for src in srcs:
-            e = by_src.get(src)
-            if not e or e["author"] != author or id(e) in seen:
-                continue
-            seen.add(id(e))
-            if e["place"] != place:
-                move_entry(e, place)
-            placed.append(e)
-    # 没出现在 layout 里的（比如页面没加载到）保持原样放在后面
-    placed += [e for e in mine if id(e) not in seen]
-    out, inserted = [], False
+    seen = set()
+    placed = {}                       # author -> [entries]（按 layout 顺序）
+    for author, places in layout.items():
+        author = safe_name(author)
+        placed.setdefault(author, [])
+        for place, srcs in places.items():
+            place = safe_name(place)
+            (bp.ORIG / author / place).mkdir(parents=True, exist_ok=True)
+            for src in srcs:
+                e = by_src.get(src)
+                if not e or id(e) in seen:
+                    continue
+                seen.add(id(e))
+                if e["author"] != author or e["place"] != place:
+                    move_entry(e, author, place)
+                placed[author].append(e)
+    # 每个作者：layout 里排好的在前，没提到的保持原顺序排在后面
+    rest = {}
     for e in entries:
-        if e["author"] == author:
-            if not inserted:
-                out.extend(placed)
-                inserted = True
-        else:
-            out.append(e)
-    if not inserted:
-        out.extend(placed)
-    out.sort(key=lambda e: bp.AUTHOR_ORDER.get(e["author"], 9))   # 稳定排序，作者内部顺序不变
+        if id(e) not in seen:
+            rest.setdefault(e["author"], []).append(e)
+    authors = sorted(set(placed) | set(rest), key=lambda a: (bp.AUTHOR_ORDER.get(a, 9), a))
+    out = []
+    for a in authors:
+        out += placed.get(a, []) + rest.get(a, [])
     bp.save_entries(out)
 
 def remove_entry(src):
@@ -178,8 +175,7 @@ class Handler(SimpleHTTPRequestHandler):
         q = urllib.parse.parse_qs(url.query)
         try:
             if url.path == "/api/layout":
-                d = self.read_json()
-                apply_layout(safe_name(d["author"]), d["layout"])
+                apply_layout(self.read_json()["layout"])
                 return self.send_json(state())
             if url.path == "/api/place":
                 d = self.read_json()

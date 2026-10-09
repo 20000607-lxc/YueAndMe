@@ -14,7 +14,7 @@ ORIG, PHOTOS, THUMBS = ROOT / "originals", ROOT / "photos", ROOT / "thumbs"
 DATA = ROOT / "js" / "photos.js"
 LARGE_MAX, THUMB_MAX = 2000, 900          # 长边像素
 EXTS = {".jpg", ".jpeg", ".png", ".heic", ".tif", ".tiff", ".webp"}
-AUTHOR_ORDER = {"越越": 0, "Sherry": 1}
+AUTHOR_ORDER = {"越越": 0, "Sherry": 1, "合照": 2}
 
 def sips(args):
     return subprocess.run(["sips", *args], capture_output=True, text=True, check=True).stdout

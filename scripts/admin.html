@@ -26,10 +26,10 @@
 
   main { flex:1; display:flex; overflow:hidden; }
   .board { flex:1; display:flex; gap:16px; padding:18px 20px; overflow-x:auto; align-items:flex-start; }
-  .col { flex:0 0 340px; background:var(--deep); border-radius:12px; display:flex; flex-direction:column; max-height:100%; transition:box-shadow .15s; }
+  .col { flex:0 0 330px; background:var(--deep); border-radius:12px; display:flex; flex-direction:column; max-height:100%; transition:box-shadow .15s; }
   .col.drop { box-shadow:0 0 0 2px var(--accent) inset; }
   .col-head { display:flex; align-items:baseline; gap:8px; padding:12px 14px 8px; }
-  .col-head h2 { margin:0; font-size:16px; font-weight:500; letter-spacing:.1em; }
+  .col-head h2 { margin:0; font-size:15px; font-weight:500; letter-spacing:.1em; }
   .col-head .n { color:var(--faint); font-size:12px; }
   .col-head .rename { margin-left:auto; border:0; background:none; color:var(--faint); padding:0 4px; font-size:12px; }
   .grid { display:grid; grid-template-columns:repeat(3, 1fr); grid-auto-rows:100px; gap:6px; padding:0 10px 12px; overflow-y:auto; min-height:120px; flex:1 1 auto; }
@@ -50,6 +50,20 @@
   aside .meta { font-size:12px; color:var(--faint); }
   aside .row { display:flex; gap:8px; justify-content:space-between; margin-top:auto; }
 
+
+  .group { display:flex; flex-direction:column; gap:10px; max-height:100%; }
+  .group-head { display:flex; align-items:baseline; gap:10px; padding:0 4px; }
+  .group-head h2 { margin:0; font:300 22px Georgia, serif; letter-spacing:.08em; }
+  .group-head .n { color:var(--faint); font-size:12px; }
+  .cols { display:flex; gap:12px; align-items:flex-start; min-height:0; flex:1; }
+  .group + .group { border-left:1px solid var(--line); padding-left:16px; }
+  .ph.ms { outline:3px solid #3b7ddd; outline-offset:-3px; }
+  .ph.ms::after { content:"✓"; position:absolute; top:4px; left:4px; width:18px; height:18px; border-radius:50%; background:#3b7ddd; color:#fff; font-size:12px; line-height:18px; text-align:center; }
+  .selbar { display:none; align-items:center; gap:10px; padding:8px 20px; background:#3b7ddd; color:#fff; font-size:13px; }
+  .selbar.show { display:flex; }
+  .selbar select { font:inherit; padding:5px 8px; border-radius:6px; border:0; }
+  .selbar button { border-color:rgba(255,255,255,.5); background:rgba(255,255,255,.15); color:#fff; }
+  .selbar .x { margin-left:auto; border:0; background:none; }
   .toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--ink); color:var(--cream); padding:10px 18px; border-radius:999px; font-size:13px; opacity:0; transition:opacity .2s; pointer-events:none; max-width:80vw; white-space:pre-wrap; }
   .toast.show { opacity:1; }
   .busy { position:fixed; inset:0; background:rgba(247,241,232,.6); display:none; align-items:center; justify-content:center; font-size:15px; color:var(--soft); z-index:5; }
@@ -63,8 +77,15 @@
   <span class="spacer"></span>
   <button id="rescan">重新扫描并压图</button>
   <a href="/" target="_blank">打开网站 ↗</a>
-  <p class="hint">拖动照片可以排序，拖到别的列就是换地点；从 Finder 把图片直接拖进某一列就能上传；点一张照片可以写标题和说明。所有改动即时保存。</p>
+  <p class="hint">拖动照片排序，拖到别的列就是换地点或换专栏；按住 ⌘ 点照片可以多选，然后批量移动；从 Finder 把图片拖进某一列就能上传；单击照片写标题和说明。所有改动即时保存。</p>
 </header>
+
+<div class="selbar" id="selbar">
+  已选 <strong id="sel-n">0</strong> 张 → 移到
+  <select id="sel-target"></select>
+  <button id="sel-go">移动</button>
+  <button class="x" id="sel-clear">取消选择 ✕</button>
+</div>
 
 <main>
   <div class="board" id="board"></div>
@@ -86,10 +107,11 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <script>
-const AUTHORS = ['越越', 'Sherry'];
+const AUTHORS = ['越越', 'Sherry', '合照'];
 let S = { photos: [], places: {} };
-let author = localStorage.getItem('admin.author') || AUTHORS[0];
-let selected = null;
+let view = localStorage.getItem('admin.view') || 'all';   // all | 作者名
+let selected = null;                 // 正在编辑的
+let multi = new Set();               // 多选的 src
 
 const $ = id => document.getElementById(id);
 const toast = (msg, ms = 2200) => { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), ms); };
@@ -102,85 +124,129 @@ async function api(path, body, method = 'POST') {
   return j;
 }
 
+const allAuthors = () => [...new Set([...AUTHORS, ...Object.keys(S.places)])];
+function placesOf(author) {
+  const places = [...(S.places[author] || [])];
+  S.photos.filter(p => p.author === author).forEach(p => { if (!places.includes(p.place)) places.push(p.place); });
+  const order = {}; S.photos.filter(p => p.author === author).forEach((p, i) => { if (!(p.place in order)) order[p.place] = i; });
+  return places.sort((a, b) => (order[a] ?? 1e9) - (order[b] ?? 1e9));
+}
+
 /* ---------- 渲染 ---------- */
 function renderTabs() {
-  const names = [...new Set([...AUTHORS, ...Object.keys(S.places)])];
-  $('tabs').innerHTML = names.map(a => `<button class="tab ${a === author ? 'on' : ''}" data-a="${a}">${a} <span style="opacity:.6">${S.photos.filter(p => p.author === a).length}</span></button>`).join('');
-  $('tabs').querySelectorAll('.tab').forEach(b => b.onclick = () => { author = b.dataset.a; localStorage.setItem('admin.author', author); render(); });
+  const names = ['all', ...allAuthors()];
+  $('tabs').innerHTML = names.map(a => `<button class="tab ${a === view ? 'on' : ''}" data-a="${a}">${a === 'all' ? '全部' : a} <span style="opacity:.6">${a === 'all' ? S.photos.length : S.photos.filter(p => p.author === a).length}</span></button>`).join('');
+  $('tabs').querySelectorAll('.tab').forEach(b => b.onclick = () => { view = b.dataset.a; localStorage.setItem('admin.view', view); render(); });
 }
 
 function renderBoard() {
   const board = $('board');
   board.innerHTML = '';
-  const places = [...(S.places[author] || [])];
-  S.photos.filter(p => p.author === author).forEach(p => { if (!places.includes(p.place)) places.push(p.place); });
-  // 按 photos.js 里出现顺序排列地点
-  const order = {}; S.photos.filter(p => p.author === author).forEach((p, i) => { if (!(p.place in order)) order[p.place] = i; });
-  places.sort((a, b) => (order[a] ?? 1e9) - (order[b] ?? 1e9));
+  const authors = view === 'all' ? allAuthors() : [view];
 
-  places.forEach(place => {
-    const pics = S.photos.filter(p => p.author === author && p.place === place);
-    const col = document.createElement('section');
-    col.className = 'col'; col.dataset.place = place;
-    col.innerHTML = `<div class="col-head"><h2>${place}</h2><span class="n">${pics.length}</span></div><div class="grid"></div>`;
-    const grid = col.querySelector('.grid');
-    if (!pics.length) grid.innerHTML = `<div class="empty">把照片拖到这里<br>或从 Finder 拖图片进来上传</div>`;
-    pics.forEach(p => {
-      const d = document.createElement('div');
-      d.className = 'ph' + (selected === p.src ? ' sel' : ''); d.dataset.src = p.src;
-      d.innerHTML = `<img src="${p.thumb}" loading="lazy" alt="">${p.title ? `<div class="t">${p.title}</div>` : ''}`;
-      d.onclick = () => select(p.src);
-      grid.appendChild(d);
+  authors.forEach(author => {
+    const group = document.createElement('section');
+    group.className = 'group'; group.dataset.author = author;
+    const n = S.photos.filter(p => p.author === author).length;
+    group.innerHTML = `<div class="group-head"><h2>${author}</h2><span class="n">${n} 张</span></div><div class="cols"></div>`;
+    const cols = group.querySelector('.cols');
+
+    placesOf(author).forEach(place => {
+      const pics = S.photos.filter(p => p.author === author && p.place === place);
+      const col = document.createElement('div');
+      col.className = 'col'; col.dataset.place = place; col.dataset.author = author;
+      col.innerHTML = `<div class="col-head"><h2>${place}</h2><span class="n">${pics.length}</span></div><div class="grid"></div>`;
+      const grid = col.querySelector('.grid');
+      if (!pics.length) grid.innerHTML = `<div class="empty">把照片拖到这里<br>或从 Finder 拖图片进来上传</div>`;
+      pics.forEach(p => {
+        const d = document.createElement('div');
+        d.className = 'ph' + (selected === p.src ? ' sel' : '') + (multi.has(p.src) ? ' ms' : ''); d.dataset.src = p.src;
+        d.innerHTML = `<img src="${p.thumb}" loading="lazy" alt="">${p.title ? `<div class="t">${p.title}</div>` : ''}`;
+        d.onclick = e => { if (e.metaKey || e.ctrlKey || e.shiftKey) toggleMulti(p.src, d); else select(p.src); };
+        grid.appendChild(d);
+      });
+      new Sortable(grid, {
+        group: 'photos', animation: 150, draggable: '.ph', forceFallback: true, fallbackTolerance: 4,
+        onEnd: evt => { grid.querySelector('.empty')?.remove(); evt.to.querySelector('.empty')?.remove(); saveLayout(); },
+      });
+      ['dragenter', 'dragover'].forEach(ev => col.addEventListener(ev, e => {
+        if ([...e.dataTransfer.types].includes('Files')) { e.preventDefault(); col.classList.add('drop'); }
+      }));
+      col.addEventListener('dragleave', () => col.classList.remove('drop'));
+      col.addEventListener('drop', e => {
+        col.classList.remove('drop');
+        if (!e.dataTransfer.files?.length) return;
+        e.preventDefault(); upload(author, place, [...e.dataTransfer.files]);
+      });
+      cols.appendChild(col);
     });
-    new Sortable(grid, {
-      group: 'photos', animation: 150, draggable: '.ph', forceFallback: true, fallbackTolerance: 4,
-      onEnd: () => { grid.querySelector('.empty')?.remove(); saveLayout(); },
-    });
-    // Finder 文件拖入上传
-    ['dragenter', 'dragover'].forEach(ev => col.addEventListener(ev, e => {
-      if ([...e.dataTransfer.types].includes('Files')) { e.preventDefault(); col.classList.add('drop'); }
-    }));
-    col.addEventListener('dragleave', () => col.classList.remove('drop'));
-    col.addEventListener('drop', e => {
-      col.classList.remove('drop');
-      if (!e.dataTransfer.files?.length) return;
-      e.preventDefault(); upload(place, [...e.dataTransfer.files]);
-    });
-    board.appendChild(col);
+
+    const add = document.createElement('div');
+    add.className = 'col-new';
+    add.innerHTML = `<strong style="font-weight:500">新建地点</strong><input placeholder="例如：青岛 / 泰山 / 家里"><button class="primary">给 ${author} 新建</button>`;
+    const inp = add.querySelector('input');
+    const doAdd = async () => {
+      const name = inp.value.trim(); if (!name) return;
+      try { S = await api('/api/place', { author, name }); render(); toast(`已给 ${author} 新建「${name}」`); }
+      catch (err) { toast('失败：' + err.message); }
+    };
+    add.querySelector('button').onclick = doAdd;
+    inp.onkeydown = e => { if (e.key === 'Enter') doAdd(); };
+    cols.appendChild(add);
+    board.appendChild(group);
   });
-
-  const add = document.createElement('div');
-  add.className = 'col-new';
-  add.innerHTML = `<strong style="font-weight:500">新建地点</strong><input id="new-place" placeholder="例如：青岛 / 泰山 / 家里"><button class="primary" id="new-place-btn">给 ${author} 新建</button>`;
-  board.appendChild(add);
-  const doAdd = async () => {
-    const name = $('new-place').value.trim(); if (!name) return;
-    try { S = await api('/api/place', { author, name }); render(); toast(`已新建「${name}」`); }
-    catch (err) { toast('失败：' + err.message); }
-  };
-  $('new-place-btn').onclick = doAdd;
-  $('new-place').onkeydown = e => { if (e.key === 'Enter') doAdd(); };
 }
 
-function render() { renderTabs(); renderBoard(); }
+function render() { renderTabs(); renderBoard(); renderSelbar(); }
 
-/* ---------- 保存排版（顺序 + 地点） ---------- */
+/* ---------- 多选 ---------- */
+function toggleMulti(src, el) {
+  if (multi.has(src)) multi.delete(src); else multi.add(src);
+  el.classList.toggle('ms', multi.has(src));
+  renderSelbar();
+}
+function renderSelbar() {
+  const bar = $('selbar');
+  bar.classList.toggle('show', multi.size > 0);
+  $('sel-n').textContent = multi.size;
+  const sel = $('sel-target'); const cur = sel.value;
+  sel.innerHTML = allAuthors().flatMap(a => placesOf(a).map(pl => `<option value="${a}/${pl}">${a} · ${pl}</option>`)).join('');
+  if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+}
+$('sel-clear').onclick = () => { multi.clear(); render(); };
+$('sel-go').onclick = async () => {
+  const [author, place] = $('sel-target').value.split('/');
+  if (!author || !multi.size) return;
+  // 目标列现有顺序 + 新加入的
+  const existing = S.photos.filter(p => p.author === author && p.place === place && !multi.has(p.src)).map(p => p.src);
+  const moving = S.photos.filter(p => multi.has(p.src)).map(p => p.src);
+  try {
+    busy(true);
+    S = await api('/api/layout', { layout: { [author]: { [place]: [...existing, ...moving] } } });
+    toast(`已把 ${moving.length} 张移到 ${author} · ${place}`);
+    multi.clear(); render();
+  } catch (err) { toast('移动失败：' + err.message, 5000); }
+  finally { busy(false); }
+};
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && multi.size) { multi.clear(); render(); } });
+
+/* ---------- 保存排版（顺序 + 地点 + 专栏） ---------- */
 let saveTimer = null;
 function saveLayout() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
     const layout = {};
     document.querySelectorAll('.col').forEach(col => {
-      layout[col.dataset.place] = [...col.querySelectorAll('.ph')].map(d => d.dataset.src);
+      (layout[col.dataset.author] ||= {})[col.dataset.place] = [...col.querySelectorAll('.ph')].map(d => d.dataset.src);
     });
-    try { busy(true); S = await api('/api/layout', { author, layout }); render(); toast('已保存'); }
+    try { busy(true); S = await api('/api/layout', { layout }); render(); toast('已保存'); }
     catch (err) { toast('保存失败：' + err.message, 5000); S = await api('/api/state', null, 'GET'); render(); }
     finally { busy(false); }
   }, 250);
 }
 
 /* ---------- 上传 ---------- */
-async function upload(place, files) {
+async function upload(author, place, files) {
   const ok = files.filter(f => /\.(jpe?g|png|heic|tiff?|webp)$/i.test(f.name));
   if (!ok.length) return toast('没有可用的图片文件');
   busy(true);
@@ -191,7 +257,7 @@ async function upload(place, files) {
       const j = await r.json(); if (j.error) throw new Error(j.error);
     }
     $('busy').textContent = '压图中…';
-    S = await api('/api/rebuild', {}); render(); toast(`已加入 ${ok.length} 张到「${place}」`);
+    S = await api('/api/rebuild', {}); render(); toast(`已加入 ${ok.length} 张到 ${author} · ${place}`);
   } catch (err) { toast('上传失败：' + err.message, 5000); }
   finally { busy(false); $('busy').textContent = '处理中…'; }
 }
