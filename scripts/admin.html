@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>管理 · Yue &amp; Sherry</title>
+<style>
+  :root { --cream:#f7f1e8; --deep:#efe6d8; --ink:#2f2620; --soft:#6b5d52; --faint:#a3948a; --accent:#b5614a; --line:rgba(47,38,32,.12); }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--cream); color:var(--ink); font:14px/1.6 -apple-system, "PingFang SC", "Noto Sans SC", sans-serif; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+  button { font:inherit; cursor:pointer; border:1px solid var(--line); background:#fff; color:var(--ink); padding:6px 14px; border-radius:999px; }
+  button:hover { border-color:var(--ink); }
+  button.primary { background:var(--ink); color:var(--cream); border-color:var(--ink); }
+  button.danger { color:var(--accent); }
+  input, textarea { font:inherit; width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:6px; background:#fff; color:var(--ink); }
+  textarea { resize:vertical; min-height:80px; }
+
+  header { display:flex; align-items:center; gap:14px; padding:12px 20px; border-bottom:1px solid var(--line); background:var(--cream); flex-wrap:wrap; }
+  header h1 { font:300 20px Georgia, serif; font-style:italic; margin:0 18px 0 0; letter-spacing:.04em; }
+  .tabs { display:flex; gap:4px; }
+  .tab { border:0; background:none; color:var(--soft); }
+  .tab.on { background:var(--ink); color:var(--cream); }
+  .spacer { flex:1; }
+  header a { color:var(--soft); font-size:13px; }
+  .hint { font-size:12px; color:var(--faint); width:100%; }
+
+  main { flex:1; display:flex; overflow:hidden; }
+  .board { flex:1; display:flex; gap:16px; padding:18px 20px; overflow-x:auto; align-items:flex-start; }
+  .col { flex:0 0 340px; background:var(--deep); border-radius:12px; display:flex; flex-direction:column; max-height:100%; transition:box-shadow .15s; }
+  .col.drop { box-shadow:0 0 0 2px var(--accent) inset; }
+  .col-head { display:flex; align-items:baseline; gap:8px; padding:12px 14px 8px; }
+  .col-head h2 { margin:0; font-size:16px; font-weight:500; letter-spacing:.1em; }
+  .col-head .n { color:var(--faint); font-size:12px; }
+  .col-head .rename { margin-left:auto; border:0; background:none; color:var(--faint); padding:0 4px; font-size:12px; }
+  .grid { display:grid; grid-template-columns:repeat(3, 1fr); grid-auto-rows:100px; gap:6px; padding:0 10px 12px; overflow-y:auto; min-height:120px; flex:1 1 auto; }
+  .ph { position:relative; height:100px; background:#ddd; border-radius:6px; overflow:hidden; cursor:grab; }
+  .ph img { width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; }
+  .ph .t { position:absolute; left:0; right:0; bottom:0; padding:12px 6px 4px; font-size:11px; color:#fff; background:linear-gradient(transparent, rgba(0,0,0,.6)); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ph.sel { outline:3px solid var(--accent); }
+  .sortable-ghost { opacity:.3; }
+  .sortable-chosen { cursor:grabbing; }
+  .empty { grid-column:1/-1; grid-row:span 2; color:var(--faint); font-size:12px; text-align:center; padding:30px 10px; border:1px dashed var(--line); border-radius:8px; }
+  .col-new { flex:0 0 240px; background:none; border:1px dashed var(--line); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:8px; }
+  .col-new input { background:transparent; }
+
+  aside { width:360px; border-left:1px solid var(--line); background:#fff; padding:18px; overflow-y:auto; display:none; flex-direction:column; gap:12px; }
+  aside.open { display:flex; }
+  aside img { width:100%; max-height:300px; object-fit:contain; background:var(--deep); border-radius:8px; }
+  aside label { font-size:12px; color:var(--soft); display:block; margin-bottom:4px; }
+  aside .meta { font-size:12px; color:var(--faint); }
+  aside .row { display:flex; gap:8px; justify-content:space-between; margin-top:auto; }
+
+  .toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--ink); color:var(--cream); padding:10px 18px; border-radius:999px; font-size:13px; opacity:0; transition:opacity .2s; pointer-events:none; max-width:80vw; white-space:pre-wrap; }
+  .toast.show { opacity:1; }
+  .busy { position:fixed; inset:0; background:rgba(247,241,232,.6); display:none; align-items:center; justify-content:center; font-size:15px; color:var(--soft); z-index:5; }
+  .busy.show { display:flex; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Yue &amp; Sherry · 管理</h1>
+  <div class="tabs" id="tabs"></div>
+  <span class="spacer"></span>
+  <button id="rescan">重新扫描并压图</button>
+  <a href="/" target="_blank">打开网站 ↗</a>
+  <p class="hint">拖动照片可以排序，拖到别的列就是换地点；从 Finder 把图片直接拖进某一列就能上传；点一张照片可以写标题和说明。所有改动即时保存。</p>
+</header>
+
+<main>
+  <div class="board" id="board"></div>
+  <aside id="panel">
+    <img id="p-img" src="" alt="">
+    <p class="meta" id="p-meta"></p>
+    <div><label>标题</label><input id="p-title"></div>
+    <div><label>日期（随意格式，如 2025 春）</label><input id="p-date"></div>
+    <div><label>一句话说明（显示在大图下方）</label><textarea id="p-note"></textarea></div>
+    <div class="row">
+      <button class="danger" id="p-remove">移出网站</button>
+      <button id="p-close">关闭</button>
+    </div>
+  </aside>
+</main>
+
+<div class="toast" id="toast"></div>
+<div class="busy" id="busy">处理中…</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+<script>
+const AUTHORS = ['越越', 'Sherry'];
+let S = { photos: [], places: {} };
+let author = localStorage.getItem('admin.author') || AUTHORS[0];
+let selected = null;
+
+const $ = id => document.getElementById(id);
+const toast = (msg, ms = 2200) => { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), ms); };
+const busy = on => $('busy').classList.toggle('show', on);
+
+async function api(path, body, method = 'POST') {
+  const r = await fetch(path, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  const j = await r.json();
+  if (j.error) throw new Error(j.error);
+  return j;
+}
+
+/* ---------- 渲染 ---------- */
+function renderTabs() {
+  const names = [...new Set([...AUTHORS, ...Object.keys(S.places)])];
+  $('tabs').innerHTML = names.map(a => `<button class="tab ${a === author ? 'on' : ''}" data-a="${a}">${a} <span style="opacity:.6">${S.photos.filter(p => p.author === a).length}</span></button>`).join('');
+  $('tabs').querySelectorAll('.tab').forEach(b => b.onclick = () => { author = b.dataset.a; localStorage.setItem('admin.author', author); render(); });
+}
+
+function renderBoard() {
+  const board = $('board');
+  board.innerHTML = '';
+  const places = [...(S.places[author] || [])];
+  S.photos.filter(p => p.author === author).forEach(p => { if (!places.includes(p.place)) places.push(p.place); });
+  // 按 photos.js 里出现顺序排列地点
+  const order = {}; S.photos.filter(p => p.author === author).forEach((p, i) => { if (!(p.place in order)) order[p.place] = i; });
+  places.sort((a, b) => (order[a] ?? 1e9) - (order[b] ?? 1e9));
+
+  places.forEach(place => {
+    const pics = S.photos.filter(p => p.author === author && p.place === place);
+    const col = document.createElement('section');
+    col.className = 'col'; col.dataset.place = place;
+    col.innerHTML = `<div class="col-head"><h2>${place}</h2><span class="n">${pics.length}</span></div><div class="grid"></div>`;
+    const grid = col.querySelector('.grid');
+    if (!pics.length) grid.innerHTML = `<div class="empty">把照片拖到这里<br>或从 Finder 拖图片进来上传</div>`;
+    pics.forEach(p => {
+      const d = document.createElement('div');
+      d.className = 'ph' + (selected === p.src ? ' sel' : ''); d.dataset.src = p.src;
+      d.innerHTML = `<img src="${p.thumb}" loading="lazy" alt="">${p.title ? `<div class="t">${p.title}</div>` : ''}`;
+      d.onclick = () => select(p.src);
+      grid.appendChild(d);
+    });
+    new Sortable(grid, {
+      group: 'photos', animation: 150, draggable: '.ph', forceFallback: true, fallbackTolerance: 4,
+      onEnd: () => { grid.querySelector('.empty')?.remove(); saveLayout(); },
+    });
+    // Finder 文件拖入上传
+    ['dragenter', 'dragover'].forEach(ev => col.addEventListener(ev, e => {
+      if ([...e.dataTransfer.types].includes('Files')) { e.preventDefault(); col.classList.add('drop'); }
+    }));
+    col.addEventListener('dragleave', () => col.classList.remove('drop'));
+    col.addEventListener('drop', e => {
+      col.classList.remove('drop');
+      if (!e.dataTransfer.files?.length) return;
+      e.preventDefault(); upload(place, [...e.dataTransfer.files]);
+    });
+    board.appendChild(col);
+  });
+
+  const add = document.createElement('div');
+  add.className = 'col-new';
+  add.innerHTML = `<strong style="font-weight:500">新建地点</strong><input id="new-place" placeholder="例如：青岛 / 泰山 / 家里"><button class="primary" id="new-place-btn">给 ${author} 新建</button>`;
+  board.appendChild(add);
+  const doAdd = async () => {
+    const name = $('new-place').value.trim(); if (!name) return;
+    try { S = await api('/api/place', { author, name }); render(); toast(`已新建「${name}」`); }
+    catch (err) { toast('失败：' + err.message); }
+  };
+  $('new-place-btn').onclick = doAdd;
+  $('new-place').onkeydown = e => { if (e.key === 'Enter') doAdd(); };
+}
+
+function render() { renderTabs(); renderBoard(); }
+
+/* ---------- 保存排版（顺序 + 地点） ---------- */
+let saveTimer = null;
+function saveLayout() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    const layout = {};
+    document.querySelectorAll('.col').forEach(col => {
+      layout[col.dataset.place] = [...col.querySelectorAll('.ph')].map(d => d.dataset.src);
+    });
+    try { busy(true); S = await api('/api/layout', { author, layout }); render(); toast('已保存'); }
+    catch (err) { toast('保存失败：' + err.message, 5000); S = await api('/api/state', null, 'GET'); render(); }
+    finally { busy(false); }
+  }, 250);
+}
+
+/* ---------- 上传 ---------- */
+async function upload(place, files) {
+  const ok = files.filter(f => /\.(jpe?g|png|heic|tiff?|webp)$/i.test(f.name));
+  if (!ok.length) return toast('没有可用的图片文件');
+  busy(true);
+  try {
+    for (const [i, f] of ok.entries()) {
+      $('busy').textContent = `上传中 ${i + 1}/${ok.length}：${f.name}`;
+      const r = await fetch(`/api/upload?author=${encodeURIComponent(author)}&place=${encodeURIComponent(place)}&name=${encodeURIComponent(f.name)}`, { method: 'POST', body: f });
+      const j = await r.json(); if (j.error) throw new Error(j.error);
+    }
+    $('busy').textContent = '压图中…';
+    S = await api('/api/rebuild', {}); render(); toast(`已加入 ${ok.length} 张到「${place}」`);
+  } catch (err) { toast('上传失败：' + err.message, 5000); }
+  finally { busy(false); $('busy').textContent = '处理中…'; }
+}
+
+/* ---------- 编辑面板 ---------- */
+function select(src) {
+  selected = src;
+  const p = S.photos.find(x => x.src === src); if (!p) return;
+  document.querySelectorAll('.ph').forEach(d => d.classList.toggle('sel', d.dataset.src === src));
+  $('panel').classList.add('open');
+  $('p-img').src = p.src;
+  $('p-meta').textContent = `${p.author} · ${p.place} · ${p.file || ''} · ${p.w}×${p.h}`;
+  $('p-title').value = p.title || ''; $('p-date').value = p.date || ''; $('p-note').value = p.note || '';
+}
+async function saveFields() {
+  if (!selected) return;
+  const p = S.photos.find(x => x.src === selected); if (!p) return;
+  const data = { src: selected, title: $('p-title').value, date: $('p-date').value, note: $('p-note').value };
+  if (data.title === p.title && data.date === p.date && data.note === p.note) return;
+  Object.assign(p, data);
+  try { await api('/api/update', data); toast('已保存'); renderBoard(); }
+  catch (err) { toast('保存失败：' + err.message, 5000); }
+}
+['p-title', 'p-date', 'p-note'].forEach(id => { $(id).addEventListener('change', saveFields); $(id).addEventListener('blur', saveFields); });
+$('p-close').onclick = () => { selected = null; $('panel').classList.remove('open'); document.querySelectorAll('.ph.sel').forEach(d => d.classList.remove('sel')); };
+$('p-remove').onclick = async () => {
+  if (!selected) return;
+  const p = S.photos.find(x => x.src === selected);
+  try { busy(true); S = await api('/api/remove', { src: selected }); $('p-close').onclick(); render(); toast(`已移出，原图放在 originals/_已移除/${p.author}/${p.place}/`); }
+  catch (err) { toast('失败：' + err.message, 5000); }
+  finally { busy(false); }
+};
+$('rescan').onclick = async () => {
+  try { busy(true); const r = await api('/api/rebuild', {}); S = r; render(); toast(r.log.slice(-3).join('\n'), 4000); }
+  catch (err) { toast('失败：' + err.message, 5000); }
+  finally { busy(false); }
+};
+
+/* ---------- 启动 ---------- */
+(async () => { S = await api('/api/state', null, 'GET'); render(); })();
+</script>
+</body>
+</html>

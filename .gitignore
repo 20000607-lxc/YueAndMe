@@ -1,0 +1,4 @@
+# 原图不上传（体积大，网站只用 photos/ 和 thumbs/ 里的压缩版）
+originals/
+.DS_Store
+__pycache__/

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yue &amp; Sherry</title>
+<meta name="description" content="越越在济南，Sherry 在旧金山。我们在两个世界，看见不一样的风景，但爱与美在我们之间自在流动。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Noto+Serif+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <a class="brand" href="#top">Yue &amp; Sherry</a>
+  <nav class="site-nav">
+    <a href="#gallery">作品</a>
+    <a href="#about">关于我们</a>
+  </nav>
+</header>
+
+<main id="top">
+
+  <!-- ===== 首页 ===== -->
+  <section class="hero">
+    <p class="hero-kicker">同一条纬线 · 两端的日落</p>
+    <h1 class="hero-title">Yue <span class="amp">&amp;</span> Sherry</h1>
+    <p class="hero-poem">
+      我们在两个世界，看见不一样的风景。<br>
+      但我们分享美好，爱与美在我们之间自在流动。
+    </p>
+
+    <div class="cities">
+      <div class="city">
+        <p class="city-name">济南 <span>Jinan</span></p>
+        <p class="city-coord">36.65° N · 117.00° E</p>
+        <p class="city-time" data-tz="Asia/Shanghai">--:--</p>
+        <p class="city-day" data-tz-day="Asia/Shanghai"></p>
+        <p class="city-who">越越在这里</p>
+      </div>
+
+      <div class="ocean">
+        <svg viewBox="0 0 200 40" aria-hidden="true">
+          <path d="M0 20 Q 25 5, 50 20 T 100 20 T 150 20 T 200 20" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M0 28 Q 25 13, 50 28 T 100 28 T 150 28 T 200 28" fill="none" stroke="currentColor" stroke-width="0.8" opacity=".5"/>
+        </svg>
+        <p>一整个太平洋<br><span>约 9,700 公里</span></p>
+      </div>
+
+      <div class="city">
+        <p class="city-name">旧金山 <span>San Francisco</span></p>
+        <p class="city-coord">37.77° N · 122.42° W</p>
+        <p class="city-time" data-tz="America/Los_Angeles">--:--</p>
+        <p class="city-day" data-tz-day="America/Los_Angeles"></p>
+        <p class="city-who">Sherry 在这里</p>
+      </div>
+    </div>
+
+    <a class="scroll-hint" href="#gallery" aria-label="向下看作品">
+      <span></span>
+    </a>
+  </section>
+
+  <!-- ===== 作品 ===== -->
+  <section class="gallery-section" id="gallery">
+    <div class="section-head">
+      <h2>作品</h2>
+      <div class="filters" role="tablist">
+        <button class="filter is-active" data-author="all">全部</button>
+        <button class="filter" data-author="越越">越越 · 济南</button>
+        <button class="filter" data-author="Sherry">Sherry · 旧金山</button>
+      </div>
+    </div>
+    <div id="gallery-root" class="gallery-root"></div>
+  </section>
+
+  <!-- ===== 关于我们 ===== -->
+  <section class="about" id="about">
+    <div class="section-head"><h2>关于我们</h2></div>
+
+    <p class="about-lede">
+      我们是高中同学，到今天已经相识十多年。<br>
+      现在我们一个在济南，一个在旧金山，<br>
+      这里是我们眼中的世界。
+    </p>
+
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <p>Yue &amp; Sherry</p>
+  <p class="footer-note">济南 ↔ 旧金山</p>
+</footer>
+
+<!-- ===== 灯箱 ===== -->
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <button class="lb-close" aria-label="关闭">×</button>
+  <button class="lb-prev" aria-label="上一张">‹</button>
+  <button class="lb-next" aria-label="下一张">›</button>
+  <figure>
+    <img id="lb-img" src="" alt="">
+    <figcaption>
+      <p class="lb-title" id="lb-title"></p>
+      <p class="lb-meta" id="lb-meta"></p>
+      <p class="lb-note" id="lb-note"></p>
+    </figcaption>
+  </figure>
+</div>
+
+<script src="js/photos.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
